@@ -1,0 +1,661 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>주차봉사자 일정표</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body {
+            font-family: 'Noto Sans KR', Arial, sans-serif;
+            background: #f8fafb;
+            margin: 0;
+            padding: 0;
+        }
+        .main-flex {
+            display: flex;
+            flex-direction: row;
+            gap: 18px;
+            align-items: flex-start;
+            max-width: 900px;
+            margin: 18px auto 0 auto;
+            padding: 0 8px 24px 8px;
+        }
+        .container {
+            flex: 1 1 0;
+            min-width: 340px;
+        }
+        .history-box {
+            width: 320px;
+            min-width: 180px;
+            background: #fff;
+            border-radius: 18px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.07);
+            padding: 14px 10px 14px 16px;
+            font-size: 0.97em;
+            color: #222;
+            margin-top: 0;
+            max-height: 600px;
+            overflow-y: auto;
+        }
+        .history-box h3 {
+            margin: 0 0 8px 0;
+            font-size: 1.08em;
+            color: #1ec800;
+            font-weight: 700;
+        }
+        .history-entry {
+            border-bottom: 1px solid #e0e0e0;
+            margin-bottom: 8px;
+            padding-bottom: 6px;
+            position: relative;
+        }
+        .history-entry:last-child {
+            border-bottom: none;
+        }
+        .history-time {
+            color: #888;
+            font-size: 0.93em;
+            margin-bottom: 2px;
+        }
+        .history-table {
+            font-size: 0.95em;
+            border-collapse: collapse;
+            width: 100%;
+            margin-bottom: 2px;
+        }
+        .history-table th, .history-table td {
+            border: 1px solid #e0e0e0;
+            padding: 2px 4px;
+            text-align: center;
+        }
+        .history-table th {
+            background: #f2f8f2;
+            color: #1ec800;
+        }
+        .delete-history-btn {
+            position: absolute;
+            top: 6px;
+            right: 6px;
+            background: #e53935;
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            font-size: 0.9em;
+            padding: 2px 8px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .delete-history-btn:hover {
+            background: #b71c1c;
+        }
+        .controls {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+        .table-card {
+            background: #fff;
+            border-radius: 18px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.07);
+            padding: 12px 8px 16px 8px;
+            margin-top: 2px;
+            overflow-x: auto;
+        }
+        table {
+            border-collapse: separate;
+            border-spacing: 0;
+            width: 100%;
+            min-width: 320px;
+            font-size: 0.97em;
+        }
+        th, td {
+            border: none;
+            padding: 7px 2px;
+            text-align: center;
+            min-width: 54px;
+        }
+        th {
+            background: #e9f7e0;
+            color: #1ec800;
+            font-weight: 700;
+            font-size: 1em;
+            border-radius: 10px;
+        }
+        td {
+            background: #f6f8f7;
+            border-radius: 10px;
+        }
+        .dropdown-group {
+            display: flex;
+            flex-direction: column;
+            gap: 3px;
+            align-items: center;
+        }
+        select {
+            font-size: 0.95em;
+            height: 28px;
+            width: 140px;
+            min-width: 100px;
+            border: 1px solid #c6e6c1;
+            border-radius: 8px;
+            background: #fff;
+            color: #222;
+            box-shadow: 0 1px 4px rgba(30,200,0,0.04);
+            margin-bottom: 1px;
+            transition: border 0.2s;
+        }
+        select:focus {
+            border: 1.5px solid #1ec800;
+            outline: none;
+        }
+        option:disabled {
+            color: #bbb;
+            background: #f2f2f2;
+        }
+        .save-btn {
+            margin: 14px 0 0 0;
+            width: 100%;
+            background: #1ec800;
+            color: #fff;
+            border: none;
+            border-radius: 18px;
+            font-size: 1.05em;
+            font-weight: 700;
+            padding: 10px 0;
+            box-shadow: 0 2px 8px rgba(30,200,0,0.08);
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .save-btn:hover {
+            background: #17b300;
+        }
+        .notice-card {
+            background: #fff;
+            border-radius: 18px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.07);
+            padding: 18px 16px 18px 16px;
+            margin: 24px 0 0 0;
+            font-size: 1em;
+            color: #222;
+        }
+        .notice-card h3 {
+            margin: 0 0 8px 0;
+            font-size: 1.08em;
+            color: #e53935;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .notice-section-title {
+            font-weight: 700;
+            color: #1ec800;
+            margin-top: 10px;
+            margin-bottom: 2px;
+            font-size: 1em;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .notice-card .emoji {
+            font-size: 1.1em;
+            margin-right: 2px;
+        }
+        .add-name-box {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 12px;
+            margin-top: 2px;
+        }
+        .add-name-input {
+            font-size: 1em;
+            padding: 6px 10px;
+            border: 1px solid #c6e6c1;
+            border-radius: 8px;
+            background: #fff;
+            color: #222;
+            width: 160px;
+            box-sizing: border-box;
+        }
+        .add-name-btn {
+            background: #1ec800;
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            font-size: 1em;
+            font-weight: 500;
+            padding: 6px 16px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .add-name-btn:hover {
+            background: #17b300;
+        }
+        @media (max-width: 900px) {
+            .main-flex {
+                flex-direction: column;
+                max-width: 100vw;
+            }
+            .history-box {
+                width: 100%;
+                max-width: 100vw;
+                margin-top: 18px;
+            }
+        }
+        @media (max-width: 600px) {
+            .container {
+                max-width: 100vw;
+                padding: 0 2vw 18px 2vw;
+            }
+            .table-card {
+                padding: 7px 2px 10px 2px;
+            }
+            th, td {
+                padding: 5px 1px;
+                min-width: 38px;
+                font-size: 0.95em;
+            }
+            select {
+                font-size: 0.92em;
+                height: 22px;
+                width: 110px;
+                min-width: 80px;
+            }
+            .save-btn {
+                font-size: 1em;
+                padding: 8px 0;
+            }
+            .notice-card {
+                padding: 12px 6px 12px 10px;
+                font-size: 0.97em;
+            }
+            .add-name-input {
+                font-size: 0.95em;
+                width: 110px;
+            }
+            .add-name-btn {
+                font-size: 0.95em;
+                padding: 5px 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="main-flex">
+        <div class="container">
+            <h2>주차봉사자 일정표</h2>
+            <div class="add-name-box">
+                <input type="text" class="add-name-input" id="addNameInput" placeholder="새 이름 입력">
+                <button class="add-name-btn" id="addNameBtn">이름 추가</button>
+            </div>
+            <div class="table-card" id="tableContainer"></div>
+            <button class="save-btn" id="saveBtn">저장</button>
+            <!-- 안내문 카드 -->
+            <div class="notice-card">
+                <h3>필독⚠️ 주차 봉사자 안내문</h3>
+                <div style="margin-bottom:8px;">
+                    형제자매님들께서는 아래 안내문을 꼭 읽어주시고, 봉사에 임해주시기 바랍니다.<br>
+                    책임감을 가지고 맡은 봉사에 참여해주시면 감사하겠습니다!
+                </div>
+                <div class="notice-section-title"><span class="emoji"></span>봉사 구역 안내</div>
+                <ul>
+                    <li><b>말씀 시작 전</b>
+                        <ul>
+                            <li>오르막길에서 1층 주차장 진입로 구간</li>
+                            <li>2층 주차장 진입로 구간</li>
+                        </ul>
+                    </li>
+                    <li><b>말씀 시작 후</b>
+                        <ul>
+                            <li>2층 주차장 진출로 구간</li>
+                            <li>롯데칠성음료 앞 삼거리 구간</li>
+                        </ul>
+                    </li>
+                </ul>
+                <div style="margin-bottom:8px;">
+                    위의 위치에서 차량 흐름을 안내하고, 주차를 유도해 주시면 됩니다.
+                </div>
+                <div class="notice-section-title"><span class="emoji"></span>봉사 시간 안내</div>
+                <ul>
+                    <li><b>말씀 전 봉사</b>
+                        <ul>
+                            <li>오후 6시 ~ 7시 30분</li>
+                            <li>여유 있게 오셔서 식사 후 봉사에 임해 주세요.</li>
+                        </ul>
+                    </li>
+                    <li><b>말씀 후 봉사</b>
+                        <ul>
+                            <li>기도가 끝난 직후부터 시작</li>
+                            <li>차량이 어느 정도 빠져나간 것으로 판단되면 봉사를 마무리해 주세요.</li>
+                        </ul>
+                    </li>
+                </ul>
+                <div class="notice-section-title"><span class="emoji">️</span>주차 안내 기준</div>
+                <ul>
+                    <li><b>1층 주차장</b>
+                        <ul>
+                            <li>처음 오신 분들과 영아 차량 위주로 안내해 주세요.</li>
+                        </ul>
+                    </li>
+                    <li><b>2층 주차장</b>
+                        <ul>
+                            <li>영유아 차량, 은장회 어르신 차량 위주로 안내해 주세요.</li>
+                            <li>그 외 성도님들께서 1층이나 2층으로 진입하실 경우,<br>
+                                <span style="color:#1ec800;"> 정중하게 양해를 구한 뒤 3층 또는 4층으로 안내해 주세요.</span>
+                            </li>
+                        </ul>
+                    </li>
+                </ul>
+                <div class="notice-section-title"><span class="emoji"></span>준비물 및 기타 사항</div>
+                <ul>
+                    <li>주차용품은 1층 창고에 비치되어 있습니다.</li>
+                    <li><span style="color:#1ec800;"> 형광 조끼</span>와 <span style="color:#1ec800;"> 주차봉</span>을 꼭 착용해 주세요.</li>
+                    <li> 비가 올 경우를 대비해 우비도 준비되어 있으니, 필요시 착용해 주세요.</li>
+                </ul>
+            </div>
+        </div>
+        <div class="history-box" id="historyBox">
+            <h3>수정 이력</h3>
+            <div id="historyList"></div>
+        </div>
+    </div>
+    <script>
+        // 봉사자 이름 목록
+        let volunteers = [
+            "최재영", "최성영", "송승재", "안재혁", "서채일", "장하현", "위건오", "박진우", "남재봉", "정재욱",
+            "김지훈", "심규민", "박시원", "박지우", "손탁안", "장인수", "선주향", "김연경", "위하영", "선가영",
+            "손다민", "강지연", "손효서", "전인화", "김다연", "박예진", "손소원", "박인혜", "한우리", "이미연"
+        ];
+
+        // 요일에 토요일 추가
+        const days = ["월", "화", "수", "목", "금", "토"];
+        const times = ["말씀 전", "말씀 후"];
+        const selectsPerCell = 2;
+
+        // 데이터 구조: [요일][말씀 전/후][셀별 드롭다운]
+        let data = Array(days.length).fill().map(() =>
+            Array(times.length).fill().map(() =>
+                Array(selectsPerCell).fill("")
+            )
+        );
+
+        // 임시 선택값(저장 전)
+        let tempData = JSON.parse(JSON.stringify(data));
+
+        // 이력 저장
+        let history = [];
+
+        const STORAGE_KEY = "parking_volunteer_table_v5";
+        const HISTORY_KEY = "parking_volunteer_history_v5";
+        const VOLUNTEERS_KEY = "parking_volunteer_names_v5";
+
+        function loadData() {
+            const saved = localStorage.getItem(STORAGE_KEY);
+            if (saved) {
+                try {
+                    const parsed = JSON.parse(saved);
+                    if (validateData(parsed)) {
+                        data = parsed;
+                        tempData = JSON.parse(JSON.stringify(data));
+                    }
+                } catch (e) {}
+            }
+            const savedHistory = localStorage.getItem(HISTORY_KEY);
+            if (savedHistory) {
+                try {
+                    const parsed = JSON.parse(savedHistory);
+                    if (Array.isArray(parsed)) {
+                        history = parsed;
+                    }
+                } catch (e) {}
+            }
+            const savedNames = localStorage.getItem(VOLUNTEERS_KEY);
+            if (savedNames) {
+                try {
+                    const parsed = JSON.parse(savedNames);
+                    if (Array.isArray(parsed) && parsed.length > 0) {
+                        volunteers = parsed;
+                    }
+                } catch (e) {}
+            }
+        }
+
+        function saveData() {
+            data = JSON.parse(JSON.stringify(tempData));
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+        }
+
+        function saveHistory() {
+            localStorage.setItem(HISTORY_KEY, JSON.stringify(history));
+        }
+
+        function saveVolunteers() {
+            localStorage.setItem(VOLUNTEERS_KEY, JSON.stringify(volunteers));
+        }
+
+        function validateData(d) {
+            return Array.isArray(d) &&
+                d.length === days.length &&
+                d.every(row => Array.isArray(row) && row.length === times.length &&
+                    row.every(cell => Array.isArray(cell) && cell.length === selectsPerCell));
+        }
+
+        function renderTable() {
+            const container = document.getElementById("tableContainer");
+            container.innerHTML = "";
+
+            let table = document.createElement("table");
+            let thead = document.createElement("thead");
+            let tbody = document.createElement("tbody");
+
+            // 헤더: 말씀 전/후
+            let headRow = document.createElement("tr");
+            let th = document.createElement("th");
+            th.textContent = "요일";
+            headRow.appendChild(th);
+            times.forEach(time => {
+                let th = document.createElement("th");
+                th.textContent = time;
+                headRow.appendChild(th);
+            });
+            thead.appendChild(headRow);
+
+            // 행: 요일, 열: 말씀 전/후
+            for (let r = 0; r < days.length; r++) {
+                let tr = document.createElement("tr");
+                let th = document.createElement("th");
+                th.textContent = days[r];
+                tr.appendChild(th);
+                for (let c = 0; c < times.length; c++) {
+                    let td = document.createElement("td");
+                    td.appendChild(createDropdownGroup(r, c));
+                    tr.appendChild(td);
+                }
+                tbody.appendChild(tr);
+            }
+
+            table.appendChild(thead);
+            table.appendChild(tbody);
+            container.appendChild(table);
+        }
+
+        function createDropdownGroup(dayIdx, timeIdx) {
+            const group = document.createElement('div');
+            group.className = 'dropdown-group';
+
+            // 중복 방지: 같은 요일의 말씀 전/후에 같은 이름이 들어가지 않게
+            let selectedNames = [];
+            for (let t = 0; t < times.length; t++) {
+                for (let i = 0; i < selectsPerCell; i++) {
+                    if (tempData[dayIdx][t][i]) selectedNames.push(tempData[dayIdx][t][i]);
+                }
+            }
+
+            for (let i = 0; i < selectsPerCell; i++) {
+                const select = document.createElement('select');
+                select.dataset.day = dayIdx;
+                select.dataset.time = timeIdx;
+                select.dataset.idx = i;
+
+                const currentValue = tempData[dayIdx][timeIdx][i];
+
+                let usedNames = [];
+                for (let j = 0; j < selectsPerCell; j++) {
+                    if (j !== i && tempData[dayIdx][timeIdx][j]) usedNames.push(tempData[dayIdx][timeIdx][j]);
+                }
+
+                let unavailable = selectedNames.filter(name => !usedNames.includes(name) || name !== currentValue);
+
+                let emptyOption = document.createElement('option');
+                emptyOption.value = '';
+                emptyOption.textContent = '선택';
+                select.appendChild(emptyOption);
+
+                volunteers.forEach(name => {
+                    let option = document.createElement('option');
+                    option.value = name;
+                    option.textContent = name;
+                    if (name !== currentValue && selectedNames.includes(name)) {
+                        option.disabled = true;
+                    }
+                    select.appendChild(option);
+                });
+
+                select.value = currentValue;
+
+                select.onchange = function() {
+                    const d = parseInt(this.dataset.day);
+                    const t = parseInt(this.dataset.time);
+                    const idx = parseInt(this.dataset.idx);
+                    tempData[d][t][idx] = this.value;
+                    renderTable();
+                };
+
+                group.appendChild(select);
+            }
+            return group;
+        }
+
+        function renderHistory() {
+            const list = document.getElementById("historyList");
+            list.innerHTML = "";
+            if (history.length === 0) {
+                list.innerHTML = "<div style='color:#aaa;'>저장 이력이 없습니다.</div>";
+                return;
+            }
+            history.slice().reverse().forEach((entry, idx) => {
+                const div = document.createElement("div");
+                div.className = "history-entry";
+                const timeDiv = document.createElement("div");
+                timeDiv.className = "history-time";
+                timeDiv.textContent = entry.time;
+                div.appendChild(timeDiv);
+
+                // 표 요약
+                const table = document.createElement("table");
+                table.className = "history-table";
+                const thead = document.createElement("thead");
+                const trh = document.createElement("tr");
+                trh.appendChild(document.createElement("th")).textContent = "요일";
+                times.forEach(t => {
+                    trh.appendChild(document.createElement("th")).textContent = t;
+                });
+                thead.appendChild(trh);
+                table.appendChild(thead);
+
+                const tbody = document.createElement("tbody");
+                for (let r = 0; r < days.length; r++) {
+                    const tr = document.createElement("tr");
+                    tr.appendChild(document.createElement("th")).textContent = days[r];
+                    for (let c = 0; c < times.length; c++) {
+                        const td = document.createElement("td");
+                        const names = entry.data[r][c].filter(x => x).join(", ");
+                        td.textContent = names || "-";
+                        tr.appendChild(td);
+                    }
+                    tbody.appendChild(tr);
+                }
+                table.appendChild(tbody);
+                div.appendChild(table);
+
+                // 삭제 버튼
+                const deleteBtn = document.createElement("button");
+                deleteBtn.className = "delete-history-btn";
+                deleteBtn.textContent = "삭제";
+                // history는 최신순으로 보여주므로 실제 인덱스는 history.length-1-idx
+                deleteBtn.onclick = function() {
+                    if (confirm("이 이력을 삭제하시겠습니까?")) {
+                        history.splice(history.length-1-idx, 1);
+                        saveHistory();
+                        renderHistory();
+                    }
+                };
+                div.appendChild(deleteBtn);
+
+                list.appendChild(div);
+            });
+        }
+
+        document.getElementById("saveBtn").onclick = function() {
+            // 변경사항이 없으면 저장하지 않음
+            if (JSON.stringify(data) === JSON.stringify(tempData)) {
+                alert("변경된 내용이 없습니다.");
+                return;
+            }
+            saveData();
+            // 이력 추가
+            const now = new Date();
+            const timeStr = now.getFullYear() + "-" +
+                String(now.getMonth()+1).padStart(2,"0") + "-" +
+                String(now.getDate()).padStart(2,"0") + " " +
+                String(now.getHours()).padStart(2,"0") + ":" +
+                String(now.getMinutes()).padStart(2,"0") + ":" +
+                String(now.getSeconds()).padStart(2,"0");
+            history.push({
+                time: timeStr,
+                data: JSON.parse(JSON.stringify(data))
+            });
+            saveHistory();
+            renderHistory();
+            alert("저장되었습니다!");
+        };
+
+        // 이름 추가 기능
+        document.getElementById("addNameBtn").onclick = function() {
+            const input = document.getElementById("addNameInput");
+            let newName = input.value.trim();
+            if (!newName) {
+                alert("이름을 입력해 주세요.");
+                return;
+            }
+            if (volunteers.includes(newName)) {
+                alert("이미 등록된 이름입니다.");
+                return;
+            }
+            // 한글, 영문, 숫자, 공백만 허용
+            if (!/^[가-힣a-zA-Z0-9 ]+$/.test(newName)) {
+                alert("이름은 한글, 영문, 숫자, 공백만 입력 가능합니다.");
+                return;
+            }
+            volunteers.push(newName);
+            saveVolunteers();
+            input.value = "";
+            renderTable();
+            alert("이름이 추가되었습니다.");
+        };
+
+        // 엔터키로 이름 추가
+        document.getElementById("addNameInput").addEventListener("keydown", function(e){
+            if (e.key === "Enter") {
+                document.getElementById("addNameBtn").click();
+            }
+        });
+
+        // 최초 로드
+        loadData();
+        renderTable();
+        renderHistory();
+    </script>
+</body>
+</html>
